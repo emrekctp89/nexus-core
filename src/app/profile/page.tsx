@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import toast from 'react-hot-toast';
 
 // Avatar bileşenini ve yükleme mantığını buraya ekliyoruz
 function Avatar({
@@ -161,12 +162,12 @@ export default function ProfilePage() {
 
     const { error } = await supabase.from('profiles').upsert(updates)
     if (error) {
-      alert('Hata: ' + error.message)
+        toast.error(error.message)
     } else {
       if (filePath) {
         setAvatarUrl(filePath)
       }
-      alert('Profil başarıyla güncellendi!')
+      toast.success('Profil başarıyla güncellendi!')
     }
   }
 

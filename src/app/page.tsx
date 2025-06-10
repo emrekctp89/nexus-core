@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import toast from 'react-hot-toast';
 
 type Note = {
   id: number
@@ -38,18 +39,29 @@ export default function HomePage() {
     e.preventDefault()
     if (!user || !newNote.title) return
     const { data, error } = await supabase.from('notes').insert({ title: newNote.title, content: newNote.content, user_id: user.id }).select().single()
-    if (data) {
-      setNotes([data, ...notes])
-      setNewNote({ title: '', content: '' })
-    } else console.error(error)
+    if (error) {
+        toast.error('Not oluşturulurken hata oluştu.');
+        console.error(error);
+    } else {
+        setNotes([data, ...notes]);
+        setNewNote({ title: '', content: '' });
+        toast.success('Not başarıyla oluşturuldu!');
+    }
   }
 
+  // DÜZELTİLMİŞ SİLME FONKSİYONU
   const handleDeleteNote = async (noteId: number) => {
     if (!user) return
     if (confirm("Bu notu silmek istediğinizden emin misiniz?")) {
       const { error } = await supabase.from('notes').delete().eq('id', noteId)
-      if (!error) setNotes(notes.filter(note => note.id !== noteId))
-      else console.error('Hata:', error)
+
+      if (error) {
+        console.error('Hata:', error);
+        toast.error("Not silinirken bir hata oluştu.");
+      } else {
+        setNotes(notes.filter(note => note.id !== noteId));
+        toast.success('Not başarıyla silindi!');
+      }
     }
   }
 
@@ -65,6 +77,7 @@ export default function HomePage() {
     setEditingContent('');
   }
 
+  // DÜZELTİLMİŞ GÜNCELLEME FONKSİYONU
   const handleUpdateNote = async (noteId: number) => {
     if (!user) return;
     const { data, error } = await supabase
@@ -74,14 +87,16 @@ export default function HomePage() {
       .select()
       .single();
     
-    if (data) {
+    if (error) {
+      console.error("Update error:", error);
+      toast.error("Not güncellenirken bir hata oluştu.");
+    } else {
       setNotes(notes.map(note => note.id === noteId ? data : note));
       handleCancelEdit();
-    } else {
-      console.error("Update error:", error);
-      alert("Not güncellenirken bir hata oluştu.");
+      toast.success('Not başarıyla güncellendi!');
     }
   }
+
   
   if (loading) return <div className="p-8">Yükleniyor...</div>
   if (!user) return <div className="p-8 text-center">Lütfen notlarınızı görmek için <a href="/login" className="text-blue-500 underline">giriş yapın</a>.</div>
