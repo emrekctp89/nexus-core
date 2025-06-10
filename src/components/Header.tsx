@@ -37,7 +37,9 @@ export default function Header() {
       <nav>
         {user ? (
           <div className="flex items-center space-x-4">
-            <span>{user.email}</span>
+            <Link href="/profile" className="hover:underline">
+                <span>{user.email}</span>
+            </Link>
             <button
               onClick={handleSignOut}
               className="px-4 py-2 bg-red-500 rounded hover:bg-red-600"
