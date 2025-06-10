@@ -17,14 +17,11 @@ export default function HomePage() {
   const [notes, setNotes] = useState<Note[]>([])
   const [newNote, setNewNote] = useState({ title: '', content: '' })
   const [loading, setLoading] = useState(true)
-
-  // YENİ: Düzenleme durumu için state'ler
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [editingContent, setEditingContent] = useState('');
 
   useEffect(() => {
-    // ... (Bu kısım aynı kaldı)
     const getUserAndNotes = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -38,7 +35,6 @@ export default function HomePage() {
   }, [supabase])
 
   const handleCreateNote = async (e: React.FormEvent) => {
-    // ... (Bu kısım aynı kaldı)
     e.preventDefault()
     if (!user || !newNote.title) return
     const { data, error } = await supabase.from('notes').insert({ title: newNote.title, content: newNote.content, user_id: user.id }).select().single()
@@ -49,7 +45,6 @@ export default function HomePage() {
   }
 
   const handleDeleteNote = async (noteId: number) => {
-    // ... (Bu kısım aynı kaldı)
     if (!user) return
     if (confirm("Bu notu silmek istediğinizden emin misiniz?")) {
       const { error } = await supabase.from('notes').delete().eq('id', noteId)
@@ -58,21 +53,18 @@ export default function HomePage() {
     }
   }
 
-  // YENİ: Düzenlemeyi başlatan fonksiyon
   const handleStartEdit = (note: Note) => {
     setEditingNoteId(note.id);
     setEditingTitle(note.title);
     setEditingContent(note.content);
   }
 
-  // YENİ: Düzenlemeyi iptal eden fonksiyon
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingTitle('');
     setEditingContent('');
   }
 
-  // YENİ: Güncellemeyi kaydeden fonksiyon
   const handleUpdateNote = async (noteId: number) => {
     if (!user) return;
     const { data, error } = await supabase
@@ -81,23 +73,21 @@ export default function HomePage() {
       .eq('id', noteId)
       .select()
       .single();
-
+    
     if (data) {
-      // Arayüzü anında güncelle
       setNotes(notes.map(note => note.id === noteId ? data : note));
-      handleCancelEdit(); // Düzenleme modundan çık
+      handleCancelEdit();
     } else {
       console.error("Update error:", error);
       alert("Not güncellenirken bir hata oluştu.");
     }
   }
-
+  
   if (loading) return <div className="p-8">Yükleniyor...</div>
   if (!user) return <div className="p-8 text-center">Lütfen notlarınızı görmek için <a href="/login" className="text-blue-500 underline">giriş yapın</a>.</div>
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      {/* ... (Yeni not ekleme formu aynı kaldı) ... */}
       <h1 className="text-3xl font-bold mb-6">Not Defterim</h1>
       <form onSubmit={handleCreateNote} className="mb-8 p-6 bg-white rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Yeni Not Ekle</h2>
@@ -112,7 +102,6 @@ export default function HomePage() {
           {notes.map((note) => (
             <div key={note.id} className="p-4 bg-white rounded-lg shadow relative">
               { editingNoteId === note.id ? (
-                // DÜZENLEME MODU ARYÜZÜ
                 <div>
                   <input type="text" value={editingTitle} onChange={(e) => setEditingTitle(e.target.value)} className="w-full p-2 mb-2 border rounded text-xl font-bold"/>
                   <textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full p-2 mb-4 border rounded h-24"/>
@@ -122,7 +111,6 @@ export default function HomePage() {
                   </div>
                 </div>
               ) : (
-                // NORMAL GÖRÜNÜM ARYÜZÜ
                 <div>
                   <h3 className="text-xl font-bold mr-20">{note.title}</h3>
                   <p className="text-gray-700 mt-2 whitespace-pre-wrap">{note.content}</p>
